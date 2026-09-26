@@ -1,0 +1,21 @@
+{
+  "name": "st-plugin-kb",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "SillyTavern 插件开发共享知识库：本地 MCP(stdio) 服务 + 检索索引，供本工作区所有插件项目共用",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.js",
+    "build-index": "node scripts/build-index.mjs",
+    "import": "node scripts/import.mjs",
+    "selftest": "node scripts/selftest.mjs",
+    "register": "node scripts/register-mcp.mjs",
+    "doctor": "node server.js --doctor",
+    "split-raw": "node scripts/split-raw-reference.mjs",
+    "workspace": "node scripts/make-workspace.mjs",
+    "query": "node scripts/call.mjs"
+  }
+}

@@ -1,0 +1,95 @@
+---
+title: 知识库使命与使用契约
+category: meta
+tags: [mission, scope, contract, onboarding]
+summary: 本知识库为什么存在、服务谁、AI 每次开工必须遵守的三条习惯、覆盖范围与质量门槛，以及新会话如何得知它。
+sources: [AGENTS.md, .clinerules/10-plugin-dev.md, .roo/rules/10-plugin-dev.md, st-plugin-kb/README.md]
+---
+
+# 知识库使命与使用契约
+
+## 使命
+
+> 让这个工作区里的每一次插件/脚本开发，都建立在**经过核实的知识与既有结论**之上，而不是凭记忆猜 API、重复踩坑、重复造轮子。
+
+展开成三个可检验的目标：
+
+1. **减少猜测**：酒馆的 API、事件名、manifest 字段、构建方式是事实问题，一律查库/查源码，不靠印象。
+2. **减少重复劳动**：同一个坑只踩一次；同一个结论只写一次，之后所有插件项目共用。
+3. **提高产出可核对性**：每条知识都标注来源文件（`sources`），AI 与人都能回到源码验证，而不是"据说"。
+
+## 服务对象与边界
+
+- **服务对象**：在本工作区写酒馆插件/脚本的 AI（Cline、Roo 等通过 MCP 调用）与开发者本人。
+- **不在范围内**：酒馆运行时功能。本知识库不是酒馆的扩展、不是 server plugin，酒馆启动时不会加载它，也不会读它。
+- **不替代**：各插件项目自带的 `README.md` / `CLAUDE.md` / `docs/`。项目自带文档描述"该项目怎么写的"，优先级高于本库的通用结论。
+
+## 使用契约（AI 每次开工的三条习惯）
+
+| 时机 | 动作 |
+| --- | --- |
+| 接到任务、还没动手 | `kb_get MISSION` 或 `kb_list` 建立地图；再 `kb_search` 查本次要用的具体知识 |
+| 查到结论后 | 与仓库源码核对；冲突时以源码为准，并**修正知识库**，而不是将错就错 |
+| 任务完成 | 有新结论用 `kb_add` 写入 `knowledge/shared/`；修正旧结论直接改对应 md 再 `kb_reindex` |
+
+典型触发场景（这些情况必须查库，不要凭记忆）：
+
+- 写/改前端扩展的入口、manifest 字段、事件订阅、设置持久化、Slash 命令、注入提示词。
+- 写/改后端 server plugin 的路由、用户目录、CSRF、缓存策略。
+- 使用酒馆助手（JS-Slash-Runner）的全局 API（`helper/*`）写脚本。
+- 移动端 UI / 浮层定位 / 触屏事件。
+- 给 Cline 做扩展（webview 侧边栏、命令、读/写 Cline 配置、打包成 vsix 交付）。
+- 判断"改完要不要重启"。
+- 涉及 XSS、路径拼接、命令执行、密钥、外联时（`kb_get 24-security-review`）。
+
+## 覆盖范围
+
+| id 前缀 | 内容 |
+| --- | --- |
+| `00`–`25` | 插件开发规范：体系总览、manifest、生命周期、`getContext()`、事件表、设置、Slash 命令、UI/i18n、生成与注入、后端插件、构建链、本地开发闭环、调试、安全审查、工作区地图 |
+| `18-mobile-positioning` | 移动端浮层与触屏事件实战 |
+| `helper/*` | 酒馆助手全局 API 声明（18 个功能域，258 个符号，含 JSDoc 原文） |
+| `cline/*` | 给 Cline / VS Code 做扩展：骨架与选型、webview 侧边栏坑、消息时序、打包安装核对、无 UI 验证与排错、Cline 配置存储与安全切换 |
+| `reference/slash-commands-*` | ST 核心斜杠命令 299 条 |
+| `reference/macros-*` | ST 核心宏 104 个 |
+| `shared/*` | 历次排查沉淀的结论 |
+
+## 质量门槛
+
+写进本库的每一条知识都应满足：
+
+1. **来源可核对**：frontmatter 的 `sources` 指向真实文件（或注明是实测结论 + 验证环境：酒馆版本、插件版本）。
+2. **结论可执行**：给出具体写法/签名/命令，不停留在"要注意"。
+3. **与代码一致**：与仓库实际行为冲突时必须修正本库；已被上游修复的临时结论要删除，不留死知识。
+4. **标题即问题**：小节标题写"这是什么/怎么用"（符号名、命令名、坑的结论），便于命中。
+
+## 新会话如何知道它
+
+| 载体 | 谁读 | 作用 |
+| --- | --- | --- |
+| `AGENTS.md`（工作区根） | Cline 与 Roo 都默认加载 | 使命 + 工具 + 文档地图 + 项目布局 + 约束，一次说清 |
+| `.clinerules/10-plugin-dev.md` | Cline（`paths:` 条件命中插件目录时才加载） | 开发流程五步 + 安全底线，避免每次都占上下文 |
+| `.roo/rules/10-plugin-dev.md` | Roo Code | 同上，精简版 |
+| MCP `initialize.instructions` | 任何 MCP 客户端连接时 | 提示"动手前先 kb_search，完成后 kb_add 沉淀" |
+| 本文档（`kb_get MISSION`） | 任何会查库的 Agent | 完整使命、契约、质量门槛 |
+
+### 在 UI 里核对（本机实测）
+
+| 想确认什么 | 去哪里看 |
+| --- | --- |
+| 知识库工具是否连上 | Cline 的 **MCP 面板** → 应出现 `st-plugin-kb`，内含 6 个工具：`kb_search` / `kb_get` / `kb_list` / `kb_add` / `kb_reindex` / `kb_stats` |
+| 规则是否被识别 | Cline 的 **Rules 面板**：入口是**底部的「天平（⚖）」图标**（本机 Cline 版本的实测位置，不是顶栏），面板里应能看到 `10-plugin-dev` 与 `AGENTS.md`，并可逐个开关 |
+| Roo Code 侧 | 顶部菜单栏图标 → **Prompts** 标签页（全局自定义指令）；工作区 `.roo/rules/` 从磁盘读取，`AGENTS.md` 默认加载 |
+| 使命是否真的生效 | 新开一个对话问"这个工作区的知识库使命是什么"，能答出"动手前先查库 / 以源码为准 / 完成后 kb_add 沉淀"三条即说明 `AGENTS.md` + MCP instructions 都已加载 |
+
+## 维护操作
+
+```bash
+cd E:\MCP\st-plugin-kb
+node server.js --doctor              # 看文档数/切块数/分类分布
+node scripts/build-index.mjs         # 手工改了 md 后重建索引
+node scripts/import.mjs              # 批量导入 inbox/ 里的文档（md/txt/json/html/docx/zip）
+node scripts/split-raw-reference.mjs # 把整坨参考转储拆分入库（@types / 斜杠命令 / 宏）
+node scripts/selftest.mjs            # 提交前自检（协议、检索、写入、索引）
+node scripts/register-mcp.mjs        # 幂等注册 MCP（roo / cline）
+```

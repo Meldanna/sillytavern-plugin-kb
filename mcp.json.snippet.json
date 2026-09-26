@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "st-plugin-kb": {
+      "command": "node",
+      "args": ["E:\\MCP\\st-plugin-kb\\server.js"],
+      "disabled": false,
+      "autoApprove": [],
+      "env": {}
+    }
+  }
+}
